@@ -1,0 +1,59 @@
+  Resources:
+    UsersTable:
+      Type: AWS::DynamoDB::Table
+      DeletionPolicy: Retain
+      Properties:
+        TableName: ${self:custom.tableName}
+        #Below only define the partition keys and sort keys, dynamodb is schemaless hence no need to define non-key attributes
+        AttributeDefinitions:
+          - AttributeName: userId
+            AttributeType: S
+          - AttributeName: basketId
+            AttributeType: S
+          - AttributeName: loginId
+            AttributeType: S
+          - AttributeName: lastUpdated
+            AttributeType: N
+        KeySchema:
+          - AttributeName: userId
+            KeyType: HASH
+          - AttributeName: basketId
+            KeyType: RANGE
+        LocalSecondaryIndexes:
+          - IndexName: userId-lastUpdated-index
+            KeySchema:
+              - AttributeName: userId
+                KeyType: HASH
+              - AttributeName: lastUpdated
+                KeyType: RANGE
+            Projection: 
+              ProjectionType: "INCLUDE"
+              NonKeyAttributes:
+                - data
+                - basketId
+        # A global secondary index only keeps track of data items where its key attribute(s) actually exist
+        GlobalSecondaryIndexes:
+          - IndexName: loginId-lastUpdated-index
+            KeySchema:
+              - AttributeName: loginId
+                KeyType: HASH
+              - AttributeName: lastUpdated
+                KeyType: RANGE
+            Projection: 
+              ProjectionType: "INCLUDE"
+              NonKeyAttributes:
+                - data
+                - basketId
+#       ProvisionedThroughput:
+#         ReadCapacityUnits: 1
+#         WriteCapacityUnits: 1
+        PointInTimeRecoverySpecification:
+          PointInTimeRecoveryEnabled: true
+        TimeToLiveSpecification:              
+          AttributeName: expiresAt
+          Enabled: true
+        # TTL values must be in Epoch(secs), TTL cleanup uses burst capacity, so based on availability it will eventually clean it up, sometimes upto 48 hours or more
+        BillingMode: PAY_PER_REQUEST
+        Tags:
+          - Key: service
+            Value: ${self:service}

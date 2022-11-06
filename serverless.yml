@@ -1,0 +1,60 @@
+service: lambda-express-dynamodb-service
+frameworkVersion: '3'
+
+#Below allows to reference env variables from .env file in serverless.yml
+useDotenv: true
+
+custom:
+  tableName: '${env:USERS_INFO_TABLE}-${sls:stage}'
+  dynamodb:
+    start:
+      migrate: true
+    stages:
+      - dev
+
+provider:
+  name: aws
+  runtime: nodejs16.x
+  region: eu-west-1
+  iam:
+    role: ${env:LAMBDA_ROLE}
+#      statements:
+#        - Effect: Allow
+#          Action:
+#            - dynamodb:Query
+#            - dynamodb:Scan
+#            - dynamodb:GetItem
+#            - dynamodb:PutItem
+#            - dynamodb:UpdateItem
+#            - dynamodb:DeleteItem
+#          Resource:
+#            - Fn::GetAtt: [ UsersTable, Arn ]
+  #Global ENV Variables, similarly we can define under different functions to set Local ENV Variables
+  environment:
+    USERS_TABLE: ${self:custom.tableName}
+#  vpc:
+#      securityGroupIds:
+#        - securityGroupId1
+#        - securityGroupId2
+#      subnetIds:
+#        - subnetId1
+#        - subnetId2
+
+plugins:
+  - serverless-plugin-typescript
+  - serverless-dynamodb-local
+  - serverless-offline
+
+functions:
+  api:
+    handler: handler.handler
+    description: This application collects and saves customer browsing information in dynamodb 
+    memorySize: 512           # optional, in MB, default is 1024
+    timeout: 10               # optional, in seconds, default is 6
+    provisionedConcurrency: 1 # optional, Count of provisioned lambda instances
+    reservedConcurrency: 1    # optional, reserved concurrency limit for this function. By default, AWS uses account concurrency limit
+    events:
+      - httpApi: '*'
+
+resources:
+  - ${file(resources/dynamodb/dynamodb.yml)}
