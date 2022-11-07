@@ -47,7 +47,7 @@ plugins:
 
 functions:
   api:
-    handler: handler.handler
+    handler: "./src/handler.handler"
     description: This application collects and saves customer browsing information in dynamodb 
     memorySize: 512           # optional, in MB, default is 1024
     timeout: 10               # optional, in seconds, default is 6

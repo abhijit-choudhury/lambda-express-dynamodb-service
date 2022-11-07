@@ -1,17 +1,14 @@
 import { DynamoDB } from "aws-sdk";
 import express, { Request, Response, Router } from "express";
 import crypto from "crypto";
+import DynamoDBClientParams from "app";
 
 const router: Router = express.Router();
 
 const USERS_TABLE = process.env.USERS_TABLE as string;
 const USERS_TABLE_USERID_LASTUPDATED_LSI = process.env.USERS_TABLE_USERID_LASTUPDATED_LSI as string;
 
-type DynamoDbClientParamsType = {
-    region?: string;
-    endpoint?: string;
-};
-const dynamoDbClientParams: DynamoDbClientParamsType = {};
+const dynamoDbClientParams: DynamoDBClientParams = {};
 if (process.env.IS_OFFLINE) {
   dynamoDbClientParams.region = 'localhost'
   dynamoDbClientParams.endpoint = 'http://localhost:8000'
