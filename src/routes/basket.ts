@@ -1,7 +1,7 @@
 import { DynamoDB } from "aws-sdk";
 import express, { Request, Response, Router } from "express";
 import crypto from "crypto";
-import DynamoDBClientParams from "app";
+import { DynamoDBClientParams } from "global-types";
 
 const router: Router = express.Router();
 
