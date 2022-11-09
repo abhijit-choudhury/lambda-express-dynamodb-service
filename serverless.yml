@@ -41,9 +41,13 @@ provider:
 #        - subnetId2
 
 plugins:
-  - serverless-plugin-typescript
+  - serverless-bundle
   - serverless-dynamodb-local
   - serverless-offline
+
+#If there are more that one functions below will help package them individually
+package:
+  individually: true
 
 functions:
   api:
