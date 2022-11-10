@@ -1,7 +1,7 @@
   Resources:
     UsersTable:
       Type: AWS::DynamoDB::Table
-      DeletionPolicy: Retain
+      #DeletionPolicy: Retain
       Properties:
         TableName: ${self:custom.tableName}
         #Below only define the partition keys and sort keys, dynamodb is schemaless hence no need to define non-key attributes

@@ -6,6 +6,7 @@ useDotenv: true
 
 custom:
   tableName: '${env:USERS_INFO_TABLE}-${sls:stage}'
+  mysecret: '${sls:stage}/${env:MY_SECRET_NAME}'
   dynamodb:
     start:
       migrate: true
@@ -53,6 +54,8 @@ functions:
   api:
     handler: "./src/handler.handler"
     description: This application collects and saves customer browsing information in dynamodb 
+    environment:
+      MY_SECRET_NAME: ${self:custom.mysecret}
     memorySize: 512           # optional, in MB, default is 1024
     timeout: 10               # optional, in seconds, default is 6
     provisionedConcurrency: 1 # optional, Count of provisioned lambda instances

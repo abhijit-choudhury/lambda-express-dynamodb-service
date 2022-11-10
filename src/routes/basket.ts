@@ -1,7 +1,10 @@
-import { DynamoDB } from "aws-sdk";
+import { DynamoDB, SecretsManager} from "aws-sdk";
 import express, { Request, Response, Router } from "express";
 import crypto from "crypto";
 import { DynamoDBClientParams } from "global-types";
+
+const secretsManager = new SecretsManager();
+const MY_SECRET_NAME = process.env.MY_SECRET_NAME as string;
 
 const router: Router = express.Router();
 
@@ -110,10 +113,12 @@ router.get("/", async function (req: Request, res: Response) {
             return basketId != "recentlyViewed";
         });
 
+        const secretsData = await secretsManager.getSecretValue({SecretId: MY_SECRET_NAME}).promise();
+
         const Item = finalItems?.pop();
         if (Item) {
             const { userId, data } = Item;
-            res.status(200).json({ userId, data });
+            res.status(200).json({ userId, data, secret: secretsData.SecretString });
         } else {
             res.status(404).json({ error: "Could not find the basket with provided userId and basketId" });
         }
