@@ -10,7 +10,6 @@ pipeline {
                     sh '''
                         npm i
                         sls deploy -s $SLS_ENVIRONMENT
-                        aws sts get-caller-identity
                     '''
                 }
 
