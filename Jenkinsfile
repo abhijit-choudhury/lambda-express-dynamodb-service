@@ -7,6 +7,7 @@ pipeline {
         stage('Build') {
             steps {
                 sh '''
+                    nvm use 18.12.1
                     npm i
                 '''
             }
