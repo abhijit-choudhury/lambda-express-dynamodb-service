@@ -8,6 +8,7 @@ pipeline {
             steps {
                 withCredentials([aws(accessKeyVariable: 'AWS_ACCESS_KEY_ID', credentialsId: 'aws-cred-id', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')]) {
                     sh '''
+                        echo $SLS_ENVIRONMENT
                         aws sts get-caller-identity
                     '''
                 }
