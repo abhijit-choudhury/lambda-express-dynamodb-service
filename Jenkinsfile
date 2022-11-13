@@ -14,12 +14,11 @@ pipeline {
         }
         stage('Deploy') {
             steps {
-                withCredentials([aws(accessKeyVariable: 'AWS_ACCESS_KEY_ID', credentialsId: 'aws-cred-id', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')]) {
+                withAWS(credentials: 'sls-creds') {
                     sh '''
                         sls deploy -s $SLS_ENVIRONMENT
                     '''
                 }
-
             }
         }
     }

@@ -162,3 +162,15 @@ To reinstate
 1. Comment the line in serverless.yml for managing dynamodb resource
 2. Redeploy the project with the above commented serverless.yml
 3. We would also then need to repoint Akamai to repoint to new api gateway domain that gets generated
+
+## CICD
+Added Jenkinsfile to the project
+SSH into Jenkins Server
+1. Install nvm into the build server as it allows the flexibility to swap node versions
+2. Install desired node versions using nvm
+3. Install serverless
+On Jenkins Portal
+1. Install Pipeline: AWS Steps plugin
+2. Add a credential in Jenkins with type AWS Credential
+3. Add a global environment variable for SLS_ENVIRONMENT for setting the right SLS stage 
+4. Finally create a multibranch pipeline job and configure the git source
