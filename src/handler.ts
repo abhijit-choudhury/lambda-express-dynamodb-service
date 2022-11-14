@@ -1,4 +1,4 @@
-import express, { Express, Request, Response, NextFunction } from "express";
+import express, { Express, Request, Response } from "express";
 import serverless from "serverless-http";
 import basketRouter from "./routes/basket";
 import cookieParser from "cookie-parser";
@@ -15,7 +15,7 @@ app.get("/test", async function (req: Request, res: Response) {
 
 app.use('/basket', basketRouter);
 
-app.use((req: Request, res: Response, next: NextFunction) => {
+app.use((req: Request, res: Response) => {
   return res.status(404).json({
     error: "Not Found",
   });

@@ -1,7 +1,8 @@
-import { DynamoDB, SecretsManager} from "aws-sdk";
+import { DynamoDB, SecretsManager } from "aws-sdk";
+import { GetCommand, PutCommand, QueryCommand, UpdateCommand } from "@aws-sdk/lib-dynamodb";
 import express, { Request, Response, Router } from "express";
 import crypto from "crypto";
-import { DynamoDBClientParams } from "global-types";
+import { dynamoDBDocClient } from "../libs/dynamodbDocClient"
 
 const secretsManager = new SecretsManager();
 const MY_SECRET_NAME = process.env.MY_SECRET_NAME as string;
@@ -10,13 +11,6 @@ const router: Router = express.Router();
 
 const USERS_TABLE = process.env.USERS_TABLE as string;
 const USERS_TABLE_USERID_LASTUPDATED_LSI = process.env.USERS_TABLE_USERID_LASTUPDATED_LSI as string;
-
-const dynamoDbClientParams: DynamoDBClientParams = {};
-if (process.env.IS_OFFLINE) {
-  dynamoDbClientParams.region = 'localhost'
-  dynamoDbClientParams.endpoint = 'http://localhost:8000'
-}
-const dynamoDbClient = new DynamoDB.DocumentClient(dynamoDbClientParams);
 
 router.get("/:basketId", async function (req: Request, res: Response) {
     try {
@@ -54,7 +48,7 @@ router.get("/:basketId", async function (req: Request, res: Response) {
         Note that AttributesToGet or Projection Expression has no effect on provisioned throughput consumption. DynamoDB determines capacity units consumed based on item size, not on the amount of data that is returned to an application
         */
 
-        const { Item } = await dynamoDbClient.get(params).promise();
+        const { Item } = await dynamoDBDocClient.send(new GetCommand(params));
 
         if (Item) {
             const { userId, data, loginId } = Item;
@@ -106,19 +100,23 @@ router.get("/", async function (req: Request, res: Response) {
             ConsistentRead: false,
         };
 
-        const { Items } = await dynamoDbClient.query(params).promise();
+        const { Items } = await dynamoDBDocClient.send(new QueryCommand(params));
 
         const finalItems = Items?.filter(Item =>{
             const { basketId } = Item;
             return basketId != "recentlyViewed";
         });
-
-        const secretsData = await secretsManager.getSecretValue({SecretId: MY_SECRET_NAME}).promise();
-
+        try {
+            const secretsData = await secretsManager.getSecretValue({SecretId: MY_SECRET_NAME}).promise();
+            console.log(`Secret string: ${secretsData}`);
+        } catch (error) {
+            console.error(error);
+        }
+        
         const Item = finalItems?.pop();
         if (Item) {
             const { userId, data } = Item;
-            res.status(200).json({ userId, data, secret: secretsData.SecretString });
+            res.status(200).json({ userId, data });
         } else {
             res.status(404).json({ error: "Could not find the basket with provided userId and basketId" });
         }
@@ -166,8 +164,8 @@ router.post("/", async function (req: Request, res: Response) {
         /*
         Dynamo DB Put vs Update, both works like Upsert. Update updates only the attributes passed but Put replaces entire item (i.e. all attributes must be passed) 
         */
-        await dynamoDbClient.put(params).promise();
-
+        const Item = await dynamoDBDocClient.send(new PutCommand(params));
+        console.log(JSON.stringify(Item));
         res.cookie("userId", userId, { httpOnly: true, expires: userCookieExpiresAt });
         res.status(201).json({ basketId });
     } catch (error) {
@@ -208,7 +206,7 @@ router.patch("/update-login/:loginId", async function (req: Request, res: Respon
             ConsistentRead: false,
         };
 
-        const { Items } = await dynamoDbClient.query(queryParams).promise();
+        const { Items } = await dynamoDBDocClient.send(new QueryCommand(queryParams));
 
         if(Items) {
             const updatedBasketIds = await Promise.all(
@@ -227,8 +225,8 @@ router.patch("/update-login/:loginId", async function (req: Request, res: Respon
                             ":lastUpdated": lastUpdated
                         }
                     };
-            
-                    await dynamoDbClient.update(params).promise();
+
+                    await dynamoDBDocClient.send(new UpdateCommand(params));
                     console.log(basketId);
                     return basketId;
                 })

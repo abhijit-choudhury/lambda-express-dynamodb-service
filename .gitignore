@@ -4,6 +4,7 @@ node_modules/
 # Serverless directories
 .serverless/
 .build/
+.webpack/
 
 # TypeScript v1 declaration files
 typings/
