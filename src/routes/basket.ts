@@ -1,5 +1,5 @@
-import { DynamoDB, SecretsManager } from "aws-sdk";
-import { GetCommand, PutCommand, QueryCommand, UpdateCommand } from "@aws-sdk/lib-dynamodb";
+import { SecretsManager } from "aws-sdk";
+import { GetCommandInput, PutCommandInput, QueryCommandInput, UpdateCommandInput } from "@aws-sdk/lib-dynamodb";
 import express, { Request, Response, Router } from "express";
 import crypto from "crypto";
 import { dynamoDBDocClient } from "../libs/dynamodbDocClient"
@@ -26,7 +26,7 @@ router.get("/:basketId", async function (req: Request, res: Response) {
 
         console.log(`Inputs userId: ${userId} basketId:${basketId}`);
 
-        const params: DynamoDB.DocumentClient.GetItemInput = {
+        const params: GetCommandInput = {
             TableName: USERS_TABLE,
             Key: {
                 userId,
@@ -48,7 +48,7 @@ router.get("/:basketId", async function (req: Request, res: Response) {
         Note that AttributesToGet or Projection Expression has no effect on provisioned throughput consumption. DynamoDB determines capacity units consumed based on item size, not on the amount of data that is returned to an application
         */
 
-        const { Item } = await dynamoDBDocClient.send(new GetCommand(params));
+        const { Item } = await dynamoDBDocClient.get(params);
 
         if (Item) {
             const { userId, data, loginId } = Item;
@@ -85,7 +85,7 @@ router.get("/", async function (req: Request, res: Response) {
          */ 
 
         
-        const params: DynamoDB.DocumentClient.QueryInput = {
+        const params: QueryCommandInput = {
             TableName: USERS_TABLE,
             IndexName: USERS_TABLE_USERID_LASTUPDATED_LSI,
             KeyConditionExpression: "userId = :userId",
@@ -100,7 +100,7 @@ router.get("/", async function (req: Request, res: Response) {
             ConsistentRead: false,
         };
 
-        const { Items } = await dynamoDBDocClient.send(new QueryCommand(params));
+        const { Items } = await dynamoDBDocClient.query(params);
 
         const finalItems = Items?.filter(Item =>{
             const { basketId } = Item;
@@ -147,7 +147,7 @@ router.post("/", async function (req: Request, res: Response) {
         //Below DynamoDB expiresAt must be in secs
         const expiresAt = Math.round(expiresAtDate.getTime() / 1000);
 
-        const params: DynamoDB.DocumentClient.PutItemInput = {
+        const params: PutCommandInput = {
             TableName: USERS_TABLE,
             Item: {
                 userId,
@@ -164,7 +164,7 @@ router.post("/", async function (req: Request, res: Response) {
         /*
         Dynamo DB Put vs Update, both works like Upsert. Update updates only the attributes passed but Put replaces entire item (i.e. all attributes must be passed) 
         */
-        const Item = await dynamoDBDocClient.send(new PutCommand(params));
+        const Item = await dynamoDBDocClient.put(params);
         console.log(JSON.stringify(Item));
         res.cookie("userId", userId, { httpOnly: true, expires: userCookieExpiresAt });
         res.status(201).json({ basketId });
@@ -191,7 +191,7 @@ router.patch("/update-login/:loginId", async function (req: Request, res: Respon
 
         //In DynamoDB we cannot update multiple items in one update operation, we need to fire them individually for each item
 
-        const queryParams: DynamoDB.DocumentClient.QueryInput = {
+        const queryParams: QueryCommandInput = {
             TableName: USERS_TABLE,
             IndexName: USERS_TABLE_USERID_LASTUPDATED_LSI,
             KeyConditionExpression: "userId = :userId",
@@ -206,14 +206,14 @@ router.patch("/update-login/:loginId", async function (req: Request, res: Respon
             ConsistentRead: false,
         };
 
-        const { Items } = await dynamoDBDocClient.send(new QueryCommand(queryParams));
+        const { Items } = await dynamoDBDocClient.query(queryParams);
 
         if(Items) {
             const updatedBasketIds = await Promise.all(
                 Items.map(async Item => {
                     const { userId, basketId } = Item;
 
-                    const params: DynamoDB.DocumentClient.UpdateItemInput = {
+                    const params: UpdateCommandInput = {
                         TableName: USERS_TABLE,
                         Key: {
                             userId,
@@ -226,7 +226,7 @@ router.patch("/update-login/:loginId", async function (req: Request, res: Respon
                         }
                     };
 
-                    await dynamoDBDocClient.send(new UpdateCommand(params));
+                    await dynamoDBDocClient.update(params);
                     console.log(basketId);
                     return basketId;
                 })
