@@ -48,6 +48,26 @@ router.get("/:basketId", async function (req: Request, res: Response) {
         Note that AttributesToGet or Projection Expression has no effect on provisioned throughput consumption. DynamoDB determines capacity units consumed based on item size, not on the amount of data that is returned to an application
         */
 
+        /*
+        //BatchGet Example
+        
+        const params2: BatchGetCommandInput = {
+            RequestItems : {
+                "users-table-dev" : {
+                    Keys : [
+                        {userId,  basketId: "1"},
+                        {userId,  basketId: "2"}
+                    ],
+                    ConsistentRead: false
+                }
+            }
+        }
+
+        const { Responses } = await dynamoDBDocClient.batchGet(params2);
+
+        console.log(JSON.stringify(Responses));
+        */
+
         const { Item } = await dynamoDBDocClient.get(params);
 
         if (Item) {
@@ -106,6 +126,7 @@ router.get("/", async function (req: Request, res: Response) {
             const { basketId } = Item;
             return basketId != "recentlyViewed";
         });
+
         try {
             const secretsData = await secretsManager.getSecretValue({SecretId: MY_SECRET_NAME}).promise();
             console.log(`Secret string: ${secretsData}`);

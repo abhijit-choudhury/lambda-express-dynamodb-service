@@ -1,0 +1,21 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "VisualEditor0",
+            "Effect": "Allow",
+            "Action": [
+                "sqs:TagQueue",
+                "sqs:ListQueues",
+                "sqs:GetQueueUrl",
+                "sqs:ListDeadLetterSourceQueues",
+                "sqs:ChangeMessageVisibility",
+                "sqs:GetQueueAttributes",
+                "sqs:ListQueueTags",
+                "sqs:CreateQueue",
+                "sqs:SetQueueAttributes"
+            ],
+            "Resource": "arn:aws:sqs:eu-west-1:*:someprefix-*"
+        }
+    ]
+}

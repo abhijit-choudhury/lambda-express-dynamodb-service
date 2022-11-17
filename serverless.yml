@@ -17,6 +17,8 @@ provider:
   name: aws
   runtime: nodejs16.x
   region: eu-west-1
+  httpApi:
+    cors: true
   iam:
     role: ${env:LAMBDA_ROLE}
 #      statements:
@@ -33,13 +35,6 @@ provider:
   #Global ENV Variables, similarly we can define under different functions to set Local ENV Variables
   environment:
     USERS_TABLE: ${self:custom.tableName}
-#  vpc:
-#      securityGroupIds:
-#        - securityGroupId1
-#        - securityGroupId2
-#      subnetIds:
-#        - subnetId1
-#        - subnetId2
 
 plugins:
   - serverless-bundle
@@ -60,6 +55,12 @@ functions:
     timeout: 10               # optional, in seconds, default is 6
     provisionedConcurrency: 1 # optional, Count of provisioned lambda instances
     reservedConcurrency: 1    # optional, reserved concurrency limit for this function. By default, AWS uses account concurrency limit
+#    vpc:
+#      securityGroupIds:
+#        - ${env:SECURITY_GROUP}
+#      subnetIds:
+#        - ${env:SUBNET1}
+#        - ${env:SUBNET2}
     events:
       - httpApi: '*'
 

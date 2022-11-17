@@ -1,0 +1,38 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "VisualEditor0",
+            "Effect": "Allow",
+            "Action": [
+                "dynamodb:ListTables",
+                "dynamodb:ListTagsOfResource",
+                "dynamodb:CreateTableReplica",
+                "dynamodb:UpdateGlobalTable",
+                "dynamodb:UpdateTableReplicaAutoScaling",
+                "dynamodb:UpdateContinuousBackups",
+                "dynamodb:DescribeReservedCapacityOfferings",
+                "dynamodb:TagResource",
+                "dynamodb:DescribeTable",
+                "dynamodb:DescribeContinuousBackups",
+                "dynamodb:CreateGlobalTable",
+                "dynamodb:DescribeLimits",
+                "dynamodb:UpdateTimeToLive",
+                "dynamodb:UntagResource",
+                "dynamodb:DescribeStream",
+                "dynamodb:DescribeTimeToLive",
+                "dynamodb:ListStreams",
+                "dynamodb:CreateTable",
+                "dynamodb:UpdateGlobalTableSettings",
+                "dynamodb:DescribeGlobalTableSettings",
+                "dynamodb:ListGlobalTables",
+                "dynamodb:DescribeGlobalTable",
+                "dynamodb:DescribeReservedCapacity",
+                "dynamodb:DescribeBackup",
+                "dynamodb:UpdateTable",
+                "dynamodb:DescribeTableReplicaAutoScaling"
+            ],
+            "Resource": "arn:aws:dynamodb:eu-west-1:*:table/someprefix-*"
+        }
+    ]
+}
